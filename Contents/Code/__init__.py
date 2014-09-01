@@ -1,4 +1,4 @@
-TITLE  = 'Now This News'
+TITLE  = 'NowThis News'
 PREFIX = '/video/nowthisnews'
 ART    = 'art-default.jpg'
 ICON   = 'icon-default.png'
