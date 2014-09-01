@@ -67,7 +67,7 @@ def Videos(title, url, page = 1):
     
     pageElement = HTML.ElementFromURL(url + "?page=" + str(page))
     
-    for item in pageElement.xpath("//*[@id='playlist']//*[@class='entry']"):
+    for item in pageElement.xpath("//*[@id='playlist']//*[contains(@class,'entry')]"):
         try:
             videoInfo = item.xpath("following-sibling::script/text()")[0]
             hls_url   = RE_VIDEO.search(videoInfo).groups()[0]
