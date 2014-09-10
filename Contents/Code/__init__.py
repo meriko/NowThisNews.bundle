@@ -4,9 +4,7 @@ ART    = 'art-default.jpg'
 ICON   = 'icon-default.png'
 
 USER_AGENT = 'Mozilla/5.0 (iPad; CPU OS 7_0 like Mac OS X) AppleWebKit/537.51.1 (KHTML, like Gecko) Version/7.0 Mobile/11A465 Safari/9537.53'
-BASE_URL = 'http://www.nowthisnews.com'
-
-RE_VIDEO = Regex('{file: *"(http:\/\/.*\.m3u8)"}')
+BASE_URL = 'http://nowthisnews.com'
 
 ###################################################################################################
 def Start():
@@ -67,20 +65,19 @@ def Videos(title, url, page = 1):
     
     pageElement = HTML.ElementFromURL(url + "?page=" + str(page))
     
-    for item in pageElement.xpath("//*[@id='playlist']//*[contains(@class,'entry')]"):
-        try:
-            videoInfo = item.xpath("following-sibling::script/text()")[0]
-            hls_url   = RE_VIDEO.search(videoInfo).groups()[0]
-        except:
-            continue
+    for item in pageElement.xpath("//*[@id='playlist']//*[contains(@class,'entry')]"):        
+        videoURL = item.xpath(".//*[@class='info']//a/@href")[0]
+        
+        if not videoURL.startswith('http'):
+            videoURL = BASE_URL + videoURL
             
         videoTitle = item.xpath(".//*[@class='info']//a/text()")[0]
         videoThumb = item.xpath(".//img/@src")[0]
         videoSummary = item.xpath(".//*[@class='age']/text()")[0] + '\r\n\r\n' + videoTitle
         
         oc.add(
-            CreateVideoClipObject(
-                url = hls_url,
+            VideoClipObject(
+                url = videoURL,
                 title = videoTitle,
                 thumb = videoThumb,
                 summary = videoSummary
@@ -108,38 +105,3 @@ def Videos(title, url, page = 1):
             )
       
     return oc
-
-####################################################################################################
-@route(PREFIX + '/CreateVideoClipObject', include_container = bool) 
-def CreateVideoClipObject(url, title, thumb, summary, include_container = False):
-    vco = VideoClipObject(
-            key = 
-                Callback(
-                    CreateVideoClipObject,
-                    url = url,
-                    title = title,
-                    thumb = thumb,
-                    summary = summary,
-                    include_container = True
-                ),
-            rating_key = title,
-            title = title,
-            thumb = thumb,
-            summary = summary,
-            items = [
-                MediaObject(
-                    video_resolution = 720,
-                    audio_channels = 2,
-                    parts = [
-                        PartObject(
-                            key = HTTPLiveStreamURL(url = url)
-                        )
-                    ]
-                )
-            ]
-    )
-    
-    if include_container:
-        return ObjectContainer(objects = [vco])
-    else:
-        return vco
