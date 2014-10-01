@@ -1,2 +1,0 @@
-NowThisNews.bundle
-==================
